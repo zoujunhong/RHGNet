@@ -83,8 +83,7 @@ def test(segmentation_module: Model, data_loader):
 def main():
     # Network Builders
     segmentation_module = Model(num_slots=11)
-    print('pretrained model loaded !')
-    dataset_train = CLEVRDataset(split='val')
+    dataset_train = CLEVRDataset(split='val', data_root='./CLEVR_with_mask/')
     loader_train = torch.utils.data.DataLoader(dataset_train, batch_size=1, shuffle=False, pin_memory=True,
                                     num_workers=0)
     

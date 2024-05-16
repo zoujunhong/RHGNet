@@ -30,7 +30,7 @@ class CLEVRTEX(torch.utils.data.Dataset):
 
     def __getitem__(self, i):
         idx = self.path[i]
-        filename = osp.join(self.img_root,str(idx//1000),'CLEVRTEX_full_{}.jpg'.format(str(idx).rjust(6, '0')))
+        filename = osp.join(self.img_root,str(idx//1000),'CLEVRTEX_full_{}.png'.format(str(idx).rjust(6, '0')))
         
         img = cv2.imread(filename)[24:216,64:256,:]
         h = 128
@@ -60,7 +60,7 @@ class CLEVRTEX_segmask(torch.utils.data.Dataset):
 
     def __getitem__(self, i):
         idx = self.path[i]
-        filename = annoname = osp.join(self.img_root,str(idx//1000),'CLEVRTEX_full_{}.jpg'.format(str(idx).rjust(6, '0')))
+        filename = annoname = osp.join(self.img_root,str(idx//1000),'CLEVRTEX_full_{}.png'.format(str(idx).rjust(6, '0')))
         annoname = annoname = osp.join(self.img_root,str(idx//1000),'CLEVRTEX_full_{}_flat.png'.format(str(idx).rjust(6, '0')))
         
         img = cv2.imread(filename)[24:216,64:256,:]
@@ -101,7 +101,7 @@ class CLEVRTEX_camo(torch.utils.data.Dataset):
 
     def __getitem__(self, i):
         idx = self.path[i]
-        filename = annoname = osp.join(self.img_root,str(idx//1000),'CLEVRTEX_camo_{}.jpg'.format(str(idx).rjust(6, '0')))
+        filename = annoname = osp.join(self.img_root,str(idx//1000),'CLEVRTEX_camo_{}.png'.format(str(idx).rjust(6, '0')))
         annoname = annoname = osp.join(self.img_root,str(idx//1000),'CLEVRTEX_camo_{}_flat.png'.format(str(idx).rjust(6, '0')))
         
         img = cv2.imread(filename)[24:216,64:256,:]
@@ -142,7 +142,7 @@ class CLEVRTEX_outd(torch.utils.data.Dataset):
 
     def __getitem__(self, i):
         idx = self.path[i]
-        filename = annoname = osp.join(self.img_root,str(idx//1000),'CLEVRTEX_outd_{}.jpg'.format(str(idx).rjust(6, '0')))
+        filename = annoname = osp.join(self.img_root,str(idx//1000),'CLEVRTEX_outd_{}.png'.format(str(idx).rjust(6, '0')))
         annoname = annoname = osp.join(self.img_root,str(idx//1000),'CLEVRTEX_outd_{}_flat.png'.format(str(idx).rjust(6, '0')))
         
         img = cv2.imread(filename)[29:221,64:256,:]
