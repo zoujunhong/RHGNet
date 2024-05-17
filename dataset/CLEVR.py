@@ -14,7 +14,7 @@ class CLEVRDataset(torch.utils.data.Dataset):
 
     def __init__(self,
                  split='train',
-                 data_root='/home/zoujunhong/dataset/CLEVR_with_mask/'):
+                 data_root='./CLEVR_with_mask/'):
         self.img_root = data_root
         self.transform = pth_transforms.Compose([
             pth_transforms.ToTensor(),
@@ -22,7 +22,7 @@ class CLEVRDataset(torch.utils.data.Dataset):
         ])
         self.split = split
         
-        self.path = range(70000) if self.split == 'train' else range(70000,100000) # np.load('CLEVR6_val_idx.npy').tolist()
+        self.path = range(70000) if self.split == 'train' else range(70000,100000)
         print('{} images for {}'.format(len(self.path), self.split))
 
 
@@ -46,7 +46,7 @@ class CLEVRDataset_segmask(torch.utils.data.Dataset):
 
     def __init__(self,
                  split='train',
-                 data_root='/home/zoujunhong/dataset/CLEVR_with_mask/'):
+                 data_root='./CLEVR_with_mask/'):
         self.img_root = data_root
         self.transform = pth_transforms.Compose([
             pth_transforms.ToTensor(),
@@ -54,7 +54,7 @@ class CLEVRDataset_segmask(torch.utils.data.Dataset):
         ])
         self.split = split
         
-        self.path = range(70000) if self.split == 'train' else range(70000, 100000) # np.load('CLEVR6_val_idx.npy').tolist()
+        self.path = range(70000) if self.split == 'train' else range(70000, 100000)
         print('{} images for {}'.format(len(self.path), self.split))
 
 
@@ -73,5 +73,36 @@ class CLEVRDataset_segmask(torch.utils.data.Dataset):
         w = 128
         img = cv2.resize(img,(w,h),interpolation=cv2.INTER_AREA)
         mask = cv2.resize(mask,(w,h),interpolation=cv2.INTER_NEAREST)
+        img = self.transform(img)
+        return img, mask
+
+
+class CLEVRDemo(torch.utils.data.Dataset):
+
+    def __init__(self,
+                 split='train',
+                 data_root='/home/zoujunhong/code/RHGNet_local/image_demo/CLEVR/'):
+        self.img_root = data_root
+        self.transform = pth_transforms.Compose([
+            pth_transforms.ToTensor(),
+            pth_transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+        ])
+        self.split = split
+        
+        self.path = range(1000) 
+        print('{} images for {}'.format(len(self.path), self.split))
+
+
+    def __len__(self):
+        """Total number of samples of data."""
+        return len(self.path)
+
+    def __getitem__(self, i):
+        idx = self.path[i]
+        filename =  osp.join(self.img_root,'images','{}.png'.format(idx))
+        annoname = osp.join(self.img_root,'seg','{}.png'.format(idx))
+        
+        img = cv2.imread(filename)
+        mask = cv2.imread(annoname)[:,:,0]
         img = self.transform(img)
         return img, mask

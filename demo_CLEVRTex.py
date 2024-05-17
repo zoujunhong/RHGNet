@@ -1,9 +1,5 @@
 # System libs
-import os
-import time
-import json
-# import math
-import random
+import cv2
 import argparse
 
 # Numerical libs
@@ -12,28 +8,18 @@ import torch.nn as nn
 import torch.nn.functional as F
 # Our libs
 from dataset.CLEVRTex import CLEVRTEX_segmask as CLEVRDataset
-# from dataset_1130 import CLEVRDataset_segmask as CLEVRDataset
+from dataset.CLEVRTex import CLEVRTexDemo
 from model.RHGNet import SlotAttentionAutoEncoder as Model
-# from model.slot_attention_ablationtd import SlotAttentionAutoEncoder as RH_Capsule
 import numpy as np
 import datetime as datetime
 from metrics.OCL import ObjectIOU
 from metrics.OCL import ARI
 from metrics.OCL import MSC as mBO
 
-seed_value = 42# 设定随机数种子
-
-np.random.seed(seed_value)
-random.seed(seed_value)
-os.environ['PYTHONHASHSEED'] = str(seed_value)  # 为了禁止hash随机化，使得实验可复现。
-
-torch.manual_seed(seed_value)     # 为CPU设置随机种子
-torch.cuda.manual_seed(seed_value)      # 为当前GPU设置随机种子（只用一块GPU）
-torch.cuda.manual_seed_all(seed_value)   # 为所有GPU设置随机种子（多块GPU）
 # train one epoch
 from random import randint
 palette = [np.array([randint(1,255),randint(1,255),randint(1,255)]) for i in range(255)]
-def test(segmentation_module: Model, data_loader):
+def test(segmentation_module: Model, data_loader, args):
 
     segmentation_module.eval()
     total_ARI = 0.
@@ -66,53 +52,54 @@ def test(segmentation_module: Model, data_loader):
             print('avg_ARI:{:.4f}, avg_iou:{:.4f}, avg_mse:{:.2f}'.format(total_ARI/total_img,total_IOU/total_img,total_mse/total_img))
 
             '''
-            un-comment the following code for visualization
+            visualization
             '''
-            # object_mask = object_mask.cpu().numpy().astype(np.uint8) * 20
-            # object_mask = np.expand_dims(object_mask, axis=-1).repeat(3, axis=-1)
-            # object_mask_palette = object_mask.copy()
-            # for i in range(object_mask.shape[0]):
-            #     for j in range(object_mask.shape[1]):
-            #          object_mask_palette[i,j,:] = palette[object_mask[i,j,0]]
-                
-            # masks = masks.squeeze().numpy().astype(np.uint8) * 20
-            # masks = np.expand_dims(masks, axis=-1).repeat(3, axis=-1)
-            # masks_palette = masks.copy()
-            # for i in range(masks.shape[0]):
-            #     for j in range(masks.shape[1]):
-            #          masks_palette[i,j,:] = palette[masks[i,j,0]]
-                
-            # rec = ((rec_obj.clamp(0,1).squeeze().permute(1,2,0).cpu().numpy())*255).astype(np.uint8)
-            # # rec = ((rec_obj.clamp(-1,1).squeeze().permute(1,2,0).cpu().numpy()+1)*127.5).astype(np.uint8)
-            # to_save = np.concatenate((origin_img, rec, object_mask_palette*0.5 + rec * 0.5, masks_palette, object_mask_palette), axis=1)
-            # cv2.imwrite('demo/mask.png', to_save)
-                
-            # for i in range(subpart_mask.shape[1]):
-            #     mask = subpart_mask[:,i,...].squeeze().unsqueeze(-1).repeat(1,1,3).detach().cpu().numpy()
-            #     rec = (subpart_rec[:,i,...] + 1)*127.5
-            #     rec = rec.squeeze().permute(1,2,0).detach().cpu().numpy()
-            #     # mask[mask < 0.95] = 0
-            #     # print(i,torch.max(subpart_mask[:,i,...]))
-            #     cv2.imwrite('demo/mask_{}.png'.format(i), (mask*rec + (1-mask)*128).astype(np.uint8))
+            if args.visualization:
+                object_mask = object_mask.cpu().numpy().astype(np.uint8) * 20
+                object_mask = np.expand_dims(object_mask, axis=-1).repeat(3, axis=-1)
+                object_mask_palette = object_mask.copy()
+                for i in range(object_mask.shape[0]):
+                    for j in range(object_mask.shape[1]):
+                        object_mask_palette[i,j,:] = palette[object_mask[i,j,0]]
+                    
+                masks = masks.squeeze().numpy().astype(np.uint8) * 20
+                masks = np.expand_dims(masks, axis=-1).repeat(3, axis=-1)
+                masks_palette = masks.copy()
+                for i in range(masks.shape[0]):
+                    for j in range(masks.shape[1]):
+                        masks_palette[i,j,:] = palette[masks[i,j,0]]
+                    
+                rec = ((rec_obj.clamp(0,1).squeeze().permute(1,2,0).cpu().numpy())*255).astype(np.uint8)
+                # rec = ((rec_obj.clamp(-1,1).squeeze().permute(1,2,0).cpu().numpy()+1)*127.5).astype(np.uint8)
+                to_save = np.concatenate((origin_img, rec, object_mask_palette*0.5 + rec * 0.5, masks_palette, object_mask_palette), axis=1)
+                cv2.imwrite('demo/mask.png', to_save)
 
-            # a = input("input:")
-            # if a == 0:
-            #     break
+                a = input("input:")
+                if a == 0:
+                    break
 
 def main():
     # Network Builders
+    parser = argparse.ArgumentParser(
+        description="PyTorch Semantic Segmentation Training"
+    )
+    parser.add_argument("--demo", action='store_true')
+    parser.add_argument("--dataroot",type=str,default='./clevrtex_full/')
+    parser.add_argument("--checkpoint",type=str,default='checkpoint/clevrtex.pth')
+    parser.add_argument("--visualization", action='store_true')
+    args = parser.parse_args()
+
+    print(args)
+    
     model = Model(num_slots=11)
-    print('pretrained model loaded !')
-    dataset_train = CLEVRDataset(split='val')
-    loader_train = torch.utils.data.DataLoader(dataset_train, batch_size=1, shuffle=True, pin_memory=True,
-                                    num_workers=0)
+    dataset_train = CLEVRDataset(split='val', data_root=args.dataroot) if not args.demo else CLEVRTexDemo(data_root=args.dataroot)
+    loader_train = torch.utils.data.DataLoader(dataset_train, batch_size=1, shuffle=True, pin_memory=True, num_workers=0)
     
     # load nets into gpu
-    to_load = torch.load('checkpoint/clevrtex.pth',map_location=torch.device("cpu"))
+    to_load = torch.load(args.checkpoint ,map_location=torch.device("cpu"))
     model.load_state_dict(to_load,strict=False)
     model = model.cuda()
-    test(model, loader_train)
-
+    test(model, loader_train, args)
 
     print('Testing Done!')
 

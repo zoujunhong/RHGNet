@@ -82,7 +82,7 @@ def ObjectIOU(pred, gt, ignore = 100): # pred shape [h, w], gt shape [h, w]
         IOU_list.append(IOU[match[i],i].item())
         Pix_list.append(torch.sum(gt == match[i]).item())
 
-    return OIOU, c1, IOU_list, Pix_list
+    return OIOU/c1, c1, IOU_list, Pix_list
 
 def MSC(pred, gt, ignore = 100): # pred shape [h, w], gt shape [h, w]
     temp = 1

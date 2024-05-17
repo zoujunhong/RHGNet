@@ -163,3 +163,32 @@ class CLEVRTEX_outd(torch.utils.data.Dataset):
         return img, mask
 
 
+class CLEVRTexDemo(torch.utils.data.Dataset):
+
+    def __init__(self,
+                 data_root='./image_demo/CLEVRTex/'):
+        self.img_root = data_root
+        self.transform = pth_transforms.Compose([
+            pth_transforms.ToTensor(),
+            pth_transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+        ])
+        
+        self.path = range(1000) 
+        print('{} images for {}'.format(len(self.path), self.split))
+
+
+    def __len__(self):
+        """Total number of samples of data."""
+        return len(self.path)
+
+    def __getitem__(self, i):
+        idx = self.path[i]
+        filename =  osp.join(self.img_root,'images','{}.png'.format(idx))
+        annoname = osp.join(self.img_root,'seg','{}.png'.format(idx))
+        
+        img = cv2.imread(filename)
+        mask = cv2.imread(annoname)[:,:,0]
+        img = self.transform(img)
+        return img, mask
+
+
