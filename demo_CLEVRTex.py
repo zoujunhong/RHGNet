@@ -1,4 +1,5 @@
 # System libs
+import os
 import cv2
 import argparse
 
@@ -72,6 +73,7 @@ def test(segmentation_module: Model, data_loader, args):
                 rec = ((rec_obj.clamp(0,1).squeeze().permute(1,2,0).cpu().numpy())*255).astype(np.uint8)
                 # rec = ((rec_obj.clamp(-1,1).squeeze().permute(1,2,0).cpu().numpy()+1)*127.5).astype(np.uint8)
                 to_save = np.concatenate((origin_img, rec, object_mask_palette*0.5 + rec * 0.5, masks_palette, object_mask_palette), axis=1)
+                os.makedirs('demo', exist_ok=True)
                 cv2.imwrite('demo/mask.png', to_save)
 
                 a = input("input:")
