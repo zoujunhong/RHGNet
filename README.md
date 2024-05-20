@@ -5,7 +5,7 @@ Pytorch implementations of "Learning Object-Centric Representation via Reverse H
 
 Codes are run under Pytorch 1.10.1. Numpy and opencv-python are needed for reading images.
 
-## Model checkpoint & Demo Dataset
+## Model checkpoint
 
 We provide all checkpoints [here](https://drive.google.com/drive/folders/1SIkil9mclYwFrhxx41FlmK2cNxrWlIMW?usp=sharing). 
 
